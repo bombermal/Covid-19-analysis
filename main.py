@@ -1,58 +1,44 @@
 #Imports
 import pandas as pd
+
+#My imports
+import Codes.function as fc
+import Codes.graph as gf
 import Codes.read as rdF
-import seaborn as sns
-from matplotlib import pyplot
-from tqdm import tqdm
-from multiprocessing.dummy import Pool as ThreadPool
-import multiprocessing as mp
+#%% 1 - Load files
 
-#%%
-
-#Load files
+#Load trimmed aln
 path = "F:/Ivan/OneDrive/Códigos ( Profissional )/IC/Covid/Covid-19-analysis/read/"
 file = "gisaid_cov26032020_sequences_trimmed.aln.fasta"
 loaded_files = rdF.read_aligned_files(path, file)
+#Put Sequences in a dataframe
+raw_df_aln = rdF.seq_to_df(loaded_files)
+#Put sequences in a list, each row as a element
+raw_lst_of_samples = fc.df_to_list(raw_df_aln)
+
+#Result of processing od raw_df_aln, each row contains a (Position, Nucleotide)
+final_data = pd.read_csv("Saved/Tidy_DF_final.csv")
+poli_data = pd.read_csv("Saved/New_counting_df.csv")
+#%% Divide o trabalho para poder ser executado em varios computadores
+#Lista dos nomes dos arquivos que serão lidos
+#divided_df_file_names = ["df_1.csv","df_2.csv","df_3.csv","df_4.csv"]
+#DataFrame utilizado para a criação da tabela de contagem de nucleotídeos
+#new_counting_df = pd.DataFrame(data=0, index=range(1,29355), columns=final_data.Nuc.unique() )
+
 
 #%%
 
-#Save on DF
-data_frame = rdF.seq_to_df(loaded_files)
+# for idx, row in tqdm(final_data.iterrows(), total=len(final_data)):
+#     plus_one(new_counting_df, row)
+    
+# new_counting_df.to_csv("Saved/New_counting_df.csv")
 
-#%%
-def single_nuc_count(sample):
-    aux = pd.DataFrame(columns=["Pos", "Nuc"])
+#%% Ploting
 
-    for idx, value in enumerate(sample.Seq):
-        aux.loc[len(aux)] = [idx+1, value]  
-    return aux
+conditions = [.5,1,2]
+list_of_filtered_dfs = []
 
-def df_to_list(df):
-    temp = []
-    for idx, row in df.iterrows():
-        temp.append(row)
-        
-    return temp
-
-list_of_samples = df_to_list(data_frame)
-
-#%%
-# Multiprocessing Imap
-tidy_count_df2 = pd.DataFrame(columns=["Pos", "Nuc"])
-poolSize = mp.cpu_count()
-pool = ThreadPool(poolSize)
-
-for ii in tqdm(pool.imap_unordered(single_nuc_count, list_of_samples), total=len(list_of_samples)):
-    tidy_count_df2 = pd.concat([tidy_count_df2, ii])
-pool.close()
-pool.join()
-
-tidy_count_df2.to_csv("Tidy_DF.csv", index=False)
-#%%
-a4_dims = (511.7, 8.27)
-fig, ax = pyplot.subplots(figsize=a4_dims)
-sns.countplot(ax=ax, x="Pos", hue="Nuc", data=tidy_count_df2)
-
-#%%
-
-
+for ii in conditions:
+  list_of_filtered_dfs.append(fc.filter_criteria(poli_data, 1302, ii))
+  
+gf.three_plots(conditions, list_of_filtered_dfs)
