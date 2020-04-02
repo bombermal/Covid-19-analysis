@@ -2,7 +2,7 @@
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 
-def three_plots(conditions, list_of_filtered_dfs, full_or_simple=False):
+def three_plots(conditions, list_of_filtered_dfs, name_id, full_or_simple=False):
     fig, (ax1, ax2, ax3 ) = plt.subplots(3,1, figsize=(90, 30), dpi=320, sharex=True)
     aux = [ax1, ax2, ax3]
     alpha = .7
@@ -28,6 +28,9 @@ def three_plots(conditions, list_of_filtered_dfs, full_or_simple=False):
         ii.plot('Pos', 'H', data=tb, alpha=alpha)
     
     ax2.legend(loc=2)
-    plt.savefig("Img/Semi .5-2.png", dpi=320)
+    if full_or_simple:
+        plt.savefig("Img/Full_"+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=320)
+    else:
+        plt.savefig("Img/Semi_"+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=320)
     
-    plt.plot()
+    #plt.plot()
