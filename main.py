@@ -1,6 +1,5 @@
 #Imports
 import pandas as pd
-from tqdm import tqdm
 
 #My imports
 import Codes.function as fc
@@ -10,7 +9,7 @@ import Codes.read as rdF
 
 #Load trimmed aln
 path = "Read/"
-file = "2_Covid-19-Human-Ref 26032020.fasta"
+file = "3_Human_cov30032020_sequences.aln.trimmed.fasta"
 loaded_files = rdF.read_aligned_files(path, file)
 #Put Sequences in a dataframe
 raw_df_aln = rdF.seq_to_df(loaded_files)
@@ -25,7 +24,10 @@ fc.transpose_seq_and_count(raw_df_aln.Seq, counted_df)
 counted_df = counted_df.fillna(0).reset_index().rename(columns={"index" : "Pos"})
 counted_df.Pos = counted_df.Pos.apply(lambda x: x+1)
 #Salva o trabalho
-counted_df.to_csv("Saved/2_Counting_df_Covid19_1302S.csv", index=False)
+counted_df.to_csv("Saved/3_Counting_df_Covid19_1302S.csv", index=False)
+#%% REading saved counted DF
+
+counted_df = pd.read_csv("Saved/3_Counting_df_Covid19_1302S.csv")
 
 #%% Ploting
 
@@ -33,9 +35,9 @@ conditions = [.5,1,2]
 list_of_filtered_dfs = []
 
 for ii in conditions:
-  list_of_filtered_dfs.append(fc.filter_criteria(counted_df, 1301, ii))
+  list_of_filtered_dfs.append(fc.filter_criteria(counted_df, 1964, ii))
   
-gf.three_plots(conditions, list_of_filtered_dfs, "2_Covid19_1302S", True)
-gf.three_plots(conditions, list_of_filtered_dfs, "2_Covid19_1302S")
+gf.three_plots(conditions, list_of_filtered_dfs, "3_Covid19_1964S", 250, True)
+gf.three_plots(conditions, list_of_filtered_dfs, "3_Covid19_1964S", 250)
 
 #%% Vamos pensar

@@ -47,6 +47,27 @@ def filter_criteria(df, total, condition=1):
     return temp
 
 def transpose_seq_and_count(column, counted_df):
+    """
+    Algoritmo para a contagem de nucletotídeos por porsição
+    
+    ex ilustrativo:
+    Posição 1  2  3    4    5  6 ... n    
+            A  B  C    D    E  E ... A
+            A  B  D    E    E  C ... A
+    Total   2A 2B 1C1D 1D1E 2E 1E1C  2A
+
+    Parameters
+    ----------
+    column : list 
+        coluna de sequencias vinda do DataFrame de amostras
+    counted_df : DataFrame
+        DataFrame com o resultado da contagem
+
+    Returns
+    -------
+    None.
+
+    """
     #Deixa todas as listas em Upper Case
     aux = column.apply(str.upper)
     #Transformei cada seq.row em lista
