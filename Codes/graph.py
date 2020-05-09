@@ -38,24 +38,27 @@ def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=32
       ii.set_title("SNPs "+str(jj)+"%")#, fontweight="bold", size=20)
       ii.xaxis.set_major_locator(ticker.FixedLocator(range(1,29400, 500)))
       
-      ii.plot('Pos', 'A', data=tb, alpha=alpha)
-      ii.plot('Pos', 'C', data=tb, alpha=alpha)
-      ii.plot('Pos', 'T', data=tb, alpha=alpha)
-      ii.plot('Pos', 'G', data=tb, alpha=alpha)
-      ii.plot('Pos', '-', data=tb, alpha=alpha)
-      ii.legend(loc=2)
-      if full_or_simple:
-        ii.plot('Pos', 'N', data=tb, alpha=alpha)
-        ii.plot('Pos', 'W', data=tb, alpha=alpha)
-        ii.plot('Pos', 'R', data=tb, alpha=alpha)
-        ii.plot('Pos', 'Y', data=tb, alpha=alpha)
-        ii.plot('Pos', 'S', data=tb, alpha=alpha)
-        ii.plot('Pos', 'M', data=tb, alpha=alpha)
-        ii.plot('Pos', 'K', data=tb, alpha=alpha)
-        ii.plot('Pos', 'V', data=tb, alpha=alpha)
-        ii.plot('Pos', 'H', data=tb, alpha=alpha)
+      # ii.plot('Pos', 'A', data=tb, alpha=alpha)
+      # ii.plot('Pos', 'C', data=tb, alpha=alpha)
+      # ii.plot('Pos', 'T', data=tb, alpha=alpha)
+      # ii.plot('Pos', 'G', data=tb, alpha=alpha)
+      # ii.plot('Pos', '-', data=tb, alpha=alpha)
+      # ii.legend(loc=2)
+      # if full_or_simple:
+      #   ii.plot('Pos', 'N', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'W', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'R', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'Y', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'S', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'M', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'K', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'V', data=tb, alpha=alpha)
+      #   ii.plot('Pos', 'H', data=tb, alpha=alpha)
+      
+      for col in tb.columns[1:]:
+        ii.plot('Pos', col, data=tb, alpha=alpha)
         
-    
+      ii.legend(loc=2)
     
     if full_or_simple:
         plt.savefig(target+"Full_"+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=dpi)
