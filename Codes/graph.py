@@ -2,7 +2,7 @@
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 
-def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=320, full_or_simple=False):
+def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=100):
     """
     Plota o gráfico das análises
 
@@ -19,7 +19,7 @@ def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=32
     target : str, optional
         Caminho onde será salvo o arquivo. O padrão é "Img/".
     dpi : int, optional
-        DPI da imagem criada, o padrão é 320.
+        DPI da imagem criada, o padrão é 100.
     full_or_simple : boolean, optional
         Booleano que define se será mostrado no plot apenas nucleotídeos ou aminoácidos também.
         O padrão é False, mostra apenas nucleotídeos.
@@ -29,7 +29,7 @@ def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=32
     None.
 
     """
-    fig, (ax1, ax2, ax3 ) = plt.subplots(3,1, figsize=(90, 30), dpi=dpi)#, sharex=True)
+    fig, (ax1, ax2, ax3 ) = plt.subplots(len(conditions),1, figsize=(90, 30), dpi=dpi)#, sharex=True)
     aux = [ax1, ax2, ax3]
     alpha = .7
     plt.rcParams.update({'font.size': 20})
@@ -37,32 +37,12 @@ def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=32
     for ii, jj, tb in zip(aux, conditions, list_of_filtered_dfs):
       ii.set_title("SNPs "+str(jj)+"%")#, fontweight="bold", size=20)
       ii.xaxis.set_major_locator(ticker.FixedLocator(range(1,29400, 500)))
-      
-      # ii.plot('Pos', 'A', data=tb, alpha=alpha)
-      # ii.plot('Pos', 'C', data=tb, alpha=alpha)
-      # ii.plot('Pos', 'T', data=tb, alpha=alpha)
-      # ii.plot('Pos', 'G', data=tb, alpha=alpha)
-      # ii.plot('Pos', '-', data=tb, alpha=alpha)
-      # ii.legend(loc=2)
-      # if full_or_simple:
-      #   ii.plot('Pos', 'N', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'W', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'R', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'Y', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'S', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'M', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'K', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'V', data=tb, alpha=alpha)
-      #   ii.plot('Pos', 'H', data=tb, alpha=alpha)
-      
+           
       for col in tb.columns[1:]:
         ii.plot('Pos', col, data=tb, alpha=alpha)
         
       ii.legend(loc=2)
     
-    if full_or_simple:
-        plt.savefig(target+"Full_"+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=dpi)
-    else:
-        plt.savefig(target+"Semi_"+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=dpi)
-    
+    plt.savefig(target+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=dpi)
+
     #plt.plot()

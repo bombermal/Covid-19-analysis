@@ -39,7 +39,7 @@ def read_files(path):
     
     return df_aln
 
-def default_name(plot = True):
+def default_name(source=""):
     """
     Gera um nome padrtão para as amostras, caso não seja dado um nome
 
@@ -54,13 +54,21 @@ def default_name(plot = True):
         DESCRIPTION.
 
     """
-    name = "Resultado_"+datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-    if plot:
-        return name+".csv"
+    # Pega apenas o nome do arquivo passando no caminho: exemplo/pasta/arquivo.csv -> arquivo
+    source = source.split("/")[-1].split(".")[0]+"_"
+    # Cria um nome único usando a data atual > Resultado_01-01-01_12-12-12
+    date = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    result = "Resultado_"
+    """
+        Preciso revisar
+    """
+    if source == "":
+        return result+date+".csv"
     else:
-        return "Plot_"+name
+        return result+source+date
 
-def read_Or_create(df_aln, target=default_name(), read=True):
+
+def create(df_aln, source, target=default_name(), read=True):
     """
     Lê arquivo de contagem já pronto ou cria um
 
@@ -81,7 +89,7 @@ def read_Or_create(df_aln, target=default_name(), read=True):
     """
     if read:
         #lê salvo
-        counted_df = pd.read_csv(target)
+        counted_df = pd.read_csv(source)
     else:
         #Df vazio
         counted_df = pd.DataFrame()
@@ -95,6 +103,7 @@ def read_Or_create(df_aln, target=default_name(), read=True):
     
     return counted_df
 
+
 def docker_flow():
     """
     Work flow do trabalho preparado para terminal e Docker
@@ -107,24 +116,32 @@ def docker_flow():
     """
     #Parser
     parser = argparse.ArgumentParser(description="Plot de SNPs")
+    parser.add_argument("--option", "-o", required=True, help="ler/criar - se igual a 'ler', recebe um csv já processado para gerar o grafico, se igual a 'criar' recebe fasta, e retorna um csv e um gráfico de SNPs")
+    parser.add_argument("--source", "-s", required=True, help="Endereço do arquivo fonte")
+    parser.add_argument("--target", "-t", required=True, help="Endereço onde os arquivos gerados serão salvos")                 
     parser.add_argument("--filter", "-f", required=True, nargs='+', type=float, help="Valor float de 0 a 100. Representa em quantos % da população um SNP precisa aparecer para ser contabilizado")
-    parser.add_argument("--source", "-s", required=True, help="Endereço absoluto dos arquivos alinhados")
-    parser.add_argument("--target", "-t", required=True, help="Endereço onde os arquivos gerados serão salvos")
+    parser.add_argument("--dpi", "-d", type=int, default=50, help="DPI da imagem gerada")
     
     args = parser.parse_args()
     
-    #Ler aqrquivos
-    df_samples = read_files(args.source)
-    counted_df = read_Or_create(df_samples, target=args.target, read=False)
+    if args.option == "ler":
+        counted_df = pd.read_csv(args.source)
+    else:
+        #Ler aqrquivos
+        df_samples = read_files(args.source)
+        counted_df = create(df_samples, target=args.target, read=False)
+    
     #Plotar
-    conditions = args.filter
+    ## Melhorar o filtro para receber quantidade variável de valores
+    ## Atual: 3 valores float
+    filter = args.filter
     list_of_filtered_dfs = []
     
     for ii in conditions:
-        list_of_filtered_dfs.append(fc.filter_criteria(counted_df, len(df_samples), ii))
+        list_of_filtered_dfs.append(fc.filter_criteria(counted_df, counted_df.loc[0].sum()-1, ii))
     	    
-    gf.three_plots(conditions, list_of_filtered_dfs, default_name(False), target=args.target, dpi=50, full_or_simple=True)
-    
+    gf.three_plots(filter, list_of_filtered_dfs, default_name(args.source), target=args.target, dpi=args.dpi)
+        
     return 0
 
 sys.exit(docker_flow())
