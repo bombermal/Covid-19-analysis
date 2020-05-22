@@ -12,7 +12,7 @@
  - [X] Plot SNPs positions
  
 ## Pt 2
- ![fluxo 2(partial)](Uml/Uml/Covid - Total.png)
+ ![fluxo 2(partial)](https://github.com/bombermal/Covid-19-analysis/blob/master/Uml/Covid%20-%20Total.png)
  - [X] Read PDBs
     - [X] Load PDBs as DataFrames
     - [X] Convert PDBs list to nodes
