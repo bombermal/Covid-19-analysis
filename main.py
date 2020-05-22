@@ -1,3 +1,4 @@
+#%% 0 - Imports
 #Imports
 import pandas as pd
 from datetime import datetime
@@ -8,7 +9,7 @@ import Codes.graph as gf
 import Codes.read as rdF
 import Codes.workFlow as wf
 
-#%% 1 - Load files
+#%% 1 - Lê arquivos
 
 #Load trimmed aln
 path = "Read/4_Human_cov03042020_sequences.aln.trimmed.fasta"
@@ -16,54 +17,68 @@ raw_df_aln = wf.read_files(path)
 
 #%% Processo de contagem
 
-#wf.read_Or_create()
+path = "Saved/4_Counting_df_Covid19_2340.csv"
 
-#Df vazio
-counted_df = pd.DataFrame()
-#função que faz a transposta de Seq e conta as ocorrencias
-fc.transpose_seq_and_count(raw_df_aln.Seq, counted_df)
-#Limpa os Nan e corrige a Pos
-counted_df = counted_df.fillna(0).reset_index().rename(columns={"index" : "Pos"})
-counted_df.Pos = counted_df.Pos.apply(lambda x: x+1)
-#Salva o trabalho
-counted_df.to_csv("Saved/4_Counting_df_Covid19_2340.csv", index=False)
-#%% REading saved counted DF
+def read_Or_create(path, ler = True, df = ""):
+    if ler:
+        return pd.read_csv(path)
+    else:
+        #Df vazio
+        counted_df = pd.DataFrame()
+        #função que faz a transposta de Seq e conta as ocorrencias
+        fc.transpose_seq_and_count(df.Seq, counted_df)
+        #Limpa os Nan e corrige a Pos
+        counted_df = counted_df.fillna(0).reset_index().rename(columns={"index" : "Pos"})
+        counted_df.Pos = counted_df.Pos.apply(lambda x: x+1)
+        #Salva o trabalho
+        counted_df.to_csv(path, index=False)
+        
+        return counted_df
 
-counted_df = pd.read_csv("Saved/4_Counting_df_Covid19_2340.csv")
+# True: lê csv anteriormente criado, False: Lê fasta e cria arquivo csv
+counted_df = read_Or_create(path=path,  ler=True)#False, df=raw_df_aln)
 
 #%% Ploting
+def plot(conditions, counted_df, name_id, target="Img/", dpi=50):
+    
+    list_of_filtered_dfs = []
+    
+    for ii in conditions:
+      list_of_filtered_dfs.append(fc.filter_criteria(counted_df, len(raw_df_aln), ii))
+      
+    gf.three_plots(conditions, list_of_filtered_dfs, name_id, target=target, dpi=dpi)
 
 conditions = [.5,1,2]
-list_of_filtered_dfs = []
 
-for ii in conditions:
-  list_of_filtered_dfs.append(fc.filter_criteria(counted_df, len(raw_df_aln), ii))
-  
-gf.three_plots(conditions, list_of_filtered_dfs, "4_Covid19_2340", target="Img/", dpi=50, full_or_simple=True)
-#gf.three_plots(conditions, list_of_filtered_dfs, "4_Covid19_2340", 250)
+# Descomente para rodar
+#plot(conditions, counted_df, "4_Covid19_2340" )
 
-#%% Vamos pensar - Ler PDB?
+#%% Ler PDB
+
+def read_pdbs(pdbsNames):
+    """
+        rd.readPDBs(fileNames, option, discotop value)
+        fileName = list with pdbs names
+        option = 'node', 'edges', 'discotop'
+        discotop value = -3.7 or -7.7
+    """
+    pdbsNodesFiles = rdF.readPDBs(pdbsNames, ".pdb.nodes")
+    pdbsEdgesFiles = rdF.readPDBs(pdbsNames, ".pdb.edges")
+
+    pdbsModifiedFiles = rdF.readPDBs(pdbsNames, ".pdb_modified", head=None)
+    for id, pdbItr in pdbsModifiedFiles.items():
+        pdbItr.columns = ["record_name", "atom_number", "atom_name", "residue_name", "chain", 
+                    "residue_number", "x", "y", "z", "occupancy", "temperature_factor", 
+                    "element_symbol"]
+
+    return pdbsNodesFiles, pdbsEdgesFiles, pdbsModifiedFiles
 
 # Read PDB's
 pdbsNames = [ "6vyo", "6wji"]
-"""
-    rd.readPDBs(fileNames, option, discotop value)
-    fileName = list with pdbs names
-    option = 'node', 'edges', 'discotop'
-    discotop value = -3.7 or -7.7
-"""
-pdbsNodesFiles = rdF.readPDBs(pdbsNames, ".pdb.nodes")
-pdbsEdgesFiles = rdF.readPDBs(pdbsNames, ".pdb.edges")
-
-pdbsModifiedFiles = rdF.readPDBs(pdbsNames, ".pdb_modified", head=None)
-for id, pdbItr in pdbsModifiedFiles.items():
-    pdbItr.columns = ["record_name", "atom_number", "atom_name", "residue_name", "chain", 
-                   "residue_number", "x", "y", "z", "occupancy", "temperature_factor", 
-                   "element_symbol"]
-
-
+pdbsNodesFiles, pdbsEdgesFiles, pdbsModifiedFiles = read_pdbs(pdbsNames)
 
 #%% Transformar sequencias em nós
+
 #Dividir PDBs em listas de listas
 pdbs_tuple_list = fc.prepare_PDBs(pdbsNodesFiles)
 #Dicinário de PDBs com listas de cadeias e nós

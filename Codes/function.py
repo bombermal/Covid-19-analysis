@@ -100,7 +100,7 @@ def prepare_PDBs(pdbs_dict):
         lista de tuplas -> [(name, [node1, node2,...]), (name, [node1, node2,...])]
     """
     result = []
-    for key, df in pdbs_dict.items():
+    for key, df in tqdm(pdbs_dict.items(), total=len(pdbs_dict)):
         #divide o df por cadeias
         chains_on_df = df.Chain.unique().tolist()
         for chain in chains_on_df:

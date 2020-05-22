@@ -4,25 +4,20 @@ import matplotlib.pyplot as plt
 
 def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=100):
     """
-    Plota o gráfico das análises
+    Plota gráfico da análise de SNPs    
 
     Parameters
     ----------
     conditions : list
-        valores usados como filtro para a análise, valor float entre 0 e 100
-        Representa a porcentagem da população que apresenta uma modificação para 
-        que ela seja contada como SNP (0.5%, 1%, 2%, ...)
+        valores usados como filtro nos DataFrames
     list_of_filtered_dfs : list
-        Lista de DataFrames já pre-filtrados usados para o Plot
+        Lista de DataFrames
     name_id : str
-        Nome único para o arquivo que será salvo após o processamento
+        Nome que será dado ao arquivo criado
     target : str, optional
-        Caminho onde será salvo o arquivo. O padrão é "Img/".
+        Caminho onde será salvoo gráfico criado. The default is "Img/".
     dpi : int, optional
-        DPI da imagem criada, o padrão é 100.
-    full_or_simple : boolean, optional
-        Booleano que define se será mostrado no plot apenas nucleotídeos ou aminoácidos também.
-        O padrão é False, mostra apenas nucleotídeos.
+        Valor de dpi do gráfico, quanto maior, mais qualidade e tamanho. The default is 100.
 
     Returns
     -------
