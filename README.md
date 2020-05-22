@@ -14,7 +14,7 @@
  
  - [X] Read PDBs
     - [X] Load PDBs as DataFrames
-    - [X] Convert PDBs list to nodes
+    - [ ] Convert PDBs list to nodes
     - [ ] Convert samples list to nodes
  - [ ] Align PDBs with samples
  - [ ] Determine values of degree and betwenness

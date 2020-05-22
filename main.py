@@ -56,12 +56,6 @@ conditions = [.5,1,2]
 #%% Ler PDB
 
 def read_pdbs(pdbsNames):
-    """
-        rd.readPDBs(fileNames, option, discotop value)
-        fileName = list with pdbs names
-        option = 'node', 'edges', 'discotop'
-        discotop value = -3.7 or -7.7
-    """
     pdbsNodesFiles = rdF.readPDBs(pdbsNames, ".pdb.nodes")
     pdbsEdgesFiles = rdF.readPDBs(pdbsNames, ".pdb.edges")
 
@@ -77,20 +71,12 @@ def read_pdbs(pdbsNames):
 pdbsNames = [ "6vyo", "6wji"]
 pdbsNodesFiles, pdbsEdgesFiles, pdbsModifiedFiles = read_pdbs(pdbsNames)
 
-#%% Transformar sequencias em nós
-
-#Dividir PDBs em listas de listas
-pdbs_tuple_list = fc.prepare_PDBs(pdbsNodesFiles)
-#Dicinário de PDBs com listas de cadeias e nós
-pdbs_list_of_tuples = fc.pdbs_ids_to_nodes(pdbs_tuple_list)
-#Lista de amostras em forma de nós
-samples_node_list = fc.df_to_node_list(raw_df_aln)
 #%% Tratar Raw data, separa da tabela de alinhamento o pdb das amostras
 def fix_pdb(pdb):
     aux = re.split(" |:|[._]", pdb.Id)
     pdb["PdbRange"] = ":".join(aux[-2:])
     pdb.Id = aux[0].replace(">", "")
-    pdb["PdabName"] = aux[1]
+    pdb["PdbName"] = aux[1]
     pdb["Chain"] = aux[3]
     
     return pdb
@@ -131,17 +117,84 @@ def read_files(path):
         
     return treated.drop(treated.index[0]).reset_index().drop(columns=["index"])
 
-path = "Read/PDBs RIN/align-refs/6vyo_A-gs.fasta.aln"
-raw_data = read_files(path)
-pdb = raw_data.loc[0]
-raw_data.drop(raw_data.index[0], inplace=True)
-pdb = fix_pdb(pdb)
+def pdbRead_or_Create(path, ler=True):
+    if ler:
+        pdb = pd.read_csv("Saved/pdb_6vyo.csv")
+        processedData = pd.read_csv("Saved/ProcessedData_6vyo.csv")
+    else:
+        path = "Read/PDBs RIN/align-refs/6vyo_A-gs.fasta.aln"
+        raw_data = read_files(path)
+        pdb = raw_data.loc[0]
+        raw_data.drop(raw_data.index[0], inplace=True)
+        pdb = fix_pdb(pdb)
 
-processedData = pd.concat([raw_data, pd.DataFrame(columns=["PDBAlign", "SeqAlign", "Virus", "Country", "LabId", "AccessionID", "CollectionData"])], axis=1, sort=False)
-for id, row in processedData.iterrows():
-    processedData.loc[id] = fix_raw_data_one(row)
-processedData.to_csv("Saved/ProcessedData_6vyo.csv", index=False)
-pdb.to_csv("Saved/pdb_6vyo.csv")
-#pdb = pd.read_csv("Saved/pdb_6vyo.csv")
-#processedData = pd.read_csv("Saved/ProcessedData_6vyo.csv")
-#%% Atribuir valores de degree ao pdb
+        processedData = pd.concat([raw_data, pd.DataFrame(columns=["PDBAlign", "SeqAlign", "Virus", "Country", "LabId", "AccessionID", "CollectionData"])], axis=1, sort=False)
+        for id, row in processedData.iterrows():
+            processedData.loc[id] = fix_raw_data_one(row)
+        processedData.to_csv("Saved/ProcessedData_6vyo.csv", index=False)
+        pdb.to_csv("Saved/pdb_6vyo.csv")
+
+    return pdb, processedData
+
+path = "Read/PDBs RIN/align-refs/6vyo_A-gs.fasta.aln"
+# True: lê csv anteriormente criado, False: Lê fasta.aln e cria arquivo csv
+pdb, processedData = pdbRead_or_Create(path)
+
+
+"""
+    1 - Alinhar pdb com pdbsNodesFiles 
+        Ambos os arquivos são DFs e precisam de conversão para sequencias de nós
+    2 - Alinhas sequencias de cadeis iguais, anotar degrees
+    3 - pegar degrees anotados pelo alinhamento do PDB e transpor para o multialinhamento de
+        processedData
+"""
+
+#%% Transformar sequencias em nós
+
+#Dividir PDBs em listas de listas
+#pdbs_tuple_list = fc.prepare_PDBs(pdbsNodesFiles)
+#Dicinário de PDBs com listas de cadeias e nós
+#pdbs_list_of_tuples = fc.pdbs_ids_to_nodes(pdbs_tuple_list)
+#Lista de amostras em forma de nós
+"""
+Repensar consumo de memória - BUG!!!
+"""
+#samples_node_list = fc.df_to_node_list(raw_df_aln[:50])
+
+"""
+Filtrar baseado na entrada
+"""
+
+def filter_df_on_pdbsDict(pdbSource, pdbDict):
+    """
+    Recebe uma lista com os pdbs de referencia, seleciona no dicionário de pdbs os pdbs escolhidos
+    baseado na cadeia e retorna uma lista de DF para cada pdb/Chain
+
+    Parameters
+    ----------
+    pdbSource : [type]
+        [description]
+    pdbDict : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+    finalList = []
+    for source in pdbSource:
+        tempChain = source.Chain
+        temp = pdbDict[str.upper(source.PdbName)]
+        temp = temp[temp.Chain == tempChain]
+        
+        finalList.append(temp)
+
+    return finalList
+
+temp = filter_df_on_pdbsDict([pdb], pdbsNodesFiles)
+
+#1 - converter sequencia de residuos em uma sequencia de um codon
+#2 - converter as sequencias em lista de nós
+#3 - alinhar
+# %%
