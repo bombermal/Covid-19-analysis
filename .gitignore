@@ -6,6 +6,7 @@ Saved/*
 Codes/__pycache__/*
 *.csv
 .spyproject
+.vscode
 
 # Compiled source #
 ###################
