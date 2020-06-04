@@ -11,22 +11,22 @@ class node:
     amino = None
     degree = None
     aminoId = None
-    pdbPos = None
-    seqPos = None
+    thisNode = None     #pdbPos = None
+    targetNode = None   #seqPos = None
     
-    def __init__(self, amino, degree, aminoId, pdbPos, seqPos):
+    def __init__(self, amino, degree, aminoId, thisNode, targetNode):
         self.amino = amino
         self.degree = degree
         self.aminoId = aminoId
-        self.pdbPos = pdbPos
-        self.seqPos = seqPos
+        self.thisNode = thisNode
+        self.targetNode = targetNode
 
     def getAll(self):
-        return self.amino, self.degree, self.aminoId, self.pdbPos, self.seqPos
+        return self.amino, self.degree, self.aminoId, self.thisNode, self.targetNode
     
-    def setAll(self, amino, degree, aminoId, pdbPos, seqPos):
+    def setAll(self, amino, degree, aminoId, thisNode, targetNode):
         self.amino = amino
         self.degree = degree
         self.aminoId = aminoId
-        self.pdbPos = pdbPos
-        self.seqPos = seqPos
+        self.thisNode = thisNode
+        self.targetNode = targetNode

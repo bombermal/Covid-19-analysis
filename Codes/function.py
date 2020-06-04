@@ -49,7 +49,7 @@ def filter_criteria(df, total, condition=1):
       
     return temp
 
-def transpose_seq_and_count(column, counted_df):
+def transpose_seq_and_count(column, counted_df):#
     """
     Algoritmo para a contagem de nucletotídeos por porsição
     
@@ -86,75 +86,6 @@ def transpose_seq_and_count(column, counted_df):
                 nuc = "T"
             counted_df.loc[idx, nuc] = count
             
-# def prepare_PDBs(pdbs_dict):
-#     """
-#     Recebe dicionário com pdbs no formato de DataFrame e retorna uma lista
-#     de tuplas, com o nome do PDB e uma lista com os os ids dos nós 
-#     Parameters
-#     ----------
-#     pdbs_dict : Dict
-#         Dicionário de DataFrames usado na entrada
-#     Returns
-#     -------
-#     result : list
-#         lista de tuplas -> [(name, [node1, node2,...]), (name, [node1, node2,...])]
-#     """
-#     result = []
-#     for key, df in tqdm(pdbs_dict.items(), total=len(pdbs_dict)):
-#         #divide o df por cadeias
-#         chains_on_df = df.Chain.unique().tolist()
-#         for chain in chains_on_df:
-#             #filtra cadeias e salva em lista
-#             filtered_df = df[df.Chain == chain]
-#             result.append((key, list(zip(filtered_df.NodeId, filtered_df.Degree))))
-        
-#     return result
-
-# def nodeIds_to_node(id):
-#     """
-#      transformar elmentos das listas em nós   
-#     Parameters
-#     ----------
-#     id : tuple
-#         tupla contendo o ID e o grau da amostra
-#     Returns
-#     -------
-#     Node
-#         Classe criada por mim, objeto Node -> ver node.py
-#     """
-#     splited_Id = id[0].split(":")
-#     degree = id[1]
-#     return nd.node(seq1(splited_Id[3]), degree, id[0], splited_Id[1], 0)
-
-# def list_of_nodeIds(tuple_list):
-#     """
-#     Chama map para elementos da sublista
-#     Parameters
-#     ----------
-#     tuple_list : list
-#         lista de tuplas, NodeId e Degree
-#     Returns
-#     -------
-#     sub_list : list
-#         lista de Nodes -> nodes.py
-#     """
-#     return list(map(nodeIds_to_node, tuple_list[1]))
-
-# def pdbs_ids_to_nodes(tuple_list):
-#     """
-#     Chama map para lista de listas
-#     Parameters
-#     ----------
-#     tuple_list : list
-#         listas de tuplas
-#         0: PDB name
-#         1: lista de NodeIds
-#     Returns
-#     -------
-#     pdbs_dict : list
-#         lista de tuplas -> [(NodeId, [nodes list]),(NodeId,...]
-#     """
-#     return [(tp[0], list_of_nodeIds(tp)) for tp in tuple_list]
 
 def sample_tuple_to_nodes(tuple):
     return nd.node(tuple[0], 0, tuple[2], 0, tuple[1])

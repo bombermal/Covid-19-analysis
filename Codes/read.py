@@ -1,7 +1,7 @@
 import pandas as pd
 from Bio import SeqIO
 
-def read_aligned_files(path, name):
+def read_aligned_files(path, name):#
     '''
     Read aligned files
 
@@ -16,7 +16,7 @@ def read_aligned_files(path, name):
             temp.append(seqRecord)
     return temp
 
-def seq_to_df(sourceList):
+def seq_to_df(sourceList):#
     """
     Save on dataframes files of type Bio.Seq
 

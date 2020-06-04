@@ -14,16 +14,10 @@
  
  - [X] Read PDBs
     - [X] Load PDBs as DataFrames
-    - [ ] Convert PDBs list to nodes
-    - [ ] Convert samples list to nodes
- - [ ] Align PDBs with samples
- - [ ] Determine values of degree and betwenness
- - [ ] Plot degree and betwenness dristribution
-
-## Versão para docker
-![fluxo 1(Terminal)](https://github.com/bombermal/Covid-19-analysis/blob/master/Uml/Covid%20-%20Terminal.png)
-
-- [X] Terminal version of the SNPS plot code
-- [X] Dockerfile
-- [X] Local test
-- [ ] Remote test
+    - [X] Convert PDBs list to nodes
+    - [X] Convert samples list to nodes
+ - [X] Align PDBs with samples
+ - [X] Determine values of degree
+ - [ ] Determine values of betwenness
+ - [ ] Plot degree dristribution
+ - [ ] Plot betwenness dristribution

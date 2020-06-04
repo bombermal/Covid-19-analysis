@@ -2,7 +2,7 @@
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 
-def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=100):
+def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=100):#
     """
     Plota gráfico da análise de SNPs    
 
@@ -39,5 +39,3 @@ def three_plots(conditions, list_of_filtered_dfs, name_id, target="Img/", dpi=10
       ii.legend(loc=2)
     
     plt.savefig(target+str(name_id)+"_"+'-'.join(str(x) for x in conditions)+".png", dpi=dpi)
-
-    #plt.plot()
