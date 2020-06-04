@@ -19,5 +19,5 @@
  - [X] Align PDBs with samples
  - [X] Determine values of degree
  - [ ] Determine values of betwenness
- - [ ] Plot degree dristribution
+ - [X] Plot degree dristribution
  - [ ] Plot betwenness dristribution

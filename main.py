@@ -1,12 +1,7 @@
 #%% 0 - Imports
 #Imports
-#import pandas as pd
-#rom datetime import datetime
-#import re
+
 #My imports
-#import Codes.function as fc
-#import Codes.graph as gf
-#import Codes.read as rdF
 import Codes.workFlow as wf
 
 #%% 1 - Lê arquivos
@@ -50,39 +45,19 @@ for ii in path_list:
 Bug conhecido - O arquivo pdb salvo não mantém a primeira coluna como index ( salvar series é diferente?)
 """
 #%% 6 - Transformar sequencias em nós
-"""
-Filtrar baseado na entrada, verifico quais cadeias estão presentes na entrada
-e a partir disso, filtro a parte dos pdbs com as mesmas cadeias, para evitar
-futuros problemas com alinhamento
-"""
+
+#1 - Separa os pdbs em dicionários
 filtered_dfs = wf.filter_df_on_pdbsDict(processed, pdbsNodesFiles)
 
 #2 - converter as sequencias em lista de nós
-#Dicionário com pdbs Filtrados na forma de nós, prontos para linhar contra pdb do multifasta
-nodes_list_from_pdbs = {}
-for ii in filtered_dfs.keys():
-    nodes_list_from_pdbs[ii] = wf.pdb_file_to_list_of_nodes(filtered_dfs[ii])
+nodes_list_from_pdbs, nodes_list_from_sample = wf.sequences_to_nodes_list(filtered_dfs, processed)
 
-nodes_list_from_sample = {}
-for ii in processed.keys():
-    nodes_list_from_sample[ii] = wf.simple_seq_to_list_of_nodes(processed[ii][0])
-
-#%%
 #3 - alinhar
 
 """
-    Verificar o alinhamento - alinhando apenas um por vez. Ampliar
+    Alinhas os pdbs com as sequências iniciais dos arquivos multifasta
 """
-import Codes.smithWaterman as sw
-
-obj = sw.smithWaterman()
-seqIds, seqPos, cover = obj.constructor(2, -1, -1, nodes_list_from_sample["6VYO"], nodes_list_from_pdbs["6VYO"], True, False)
-#%%
-#4 salvar resultado em df
-#Lista de Ids dos aminoácidos alinhados
-pdb["AlnResult"] = "|".join(seqIds)
-#Lista de Degrees criadas a partir da lista de Ids
-pdb["AlnDgree"] = "|".join([str(filtered_dfs[filtered_dfs.NodeId == x].Degree.values[0]) for x in seqIds])
+wf.align_head_pdb(filtered_dfs, processed, nodes_list_from_pdbs, nodes_list_from_sample)
 
 #%% 7 - Transpor resultados
 import matplotlib.pyplot as plot
@@ -90,8 +65,7 @@ import seaborn as sns
 
 #temp = [float(x) for x in pdb.AlnDgree.split("|")]
 #sns.distplot(temp, kde=False)
-processedData["Degree"] = 0
-temp = processedData.loc[11278]
+temp = processed["6VYO"][1].loc[11278]
 
 def range_converter(rng):
     """
@@ -111,6 +85,26 @@ def range_converter(rng):
 
     #return range(temp[0]-1, temp[1])
     return temp[0]-1, temp[1]
+
 aux = range_converter(temp.PDBAlign)
-temp.Degree = "|".join(pdb.AlnDgree.split("|")[aux[0]:aux[1]])
+temp["Degree"] = "|".join(processed["6VYO"][0].AlnDgree.split("|")[aux[0]:aux[1]])
+# %%
+from tqdm import tqdm
+for key in processed.keys():
+    degreeString = processed[key][0].AlnDgree.split("|")
+    processed[key][1]["Degrees"] = 0
+    for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
+        aux = range_converter(row.PDBAlign)
+        processed[key][1]["Degrees"].loc[idx] = "|".join(degreeString[aux[0]:aux[1]])
+
+# %%
+
+### To Do
+# 1 - Gerar Plots para todas os pdbs
+# 2 - Gerar plot mostrando apenas as posições polimórficas, pegar a tabela filtrada modificando o
+# algoritmo de filtragem
+# 3 - Descobrir como conseguir o Betweness e plotar
+x = [ float(x) for x in processed["6VYO"][1].loc[11278].Degrees.split("|")]
+sns.distplot(x)
+
 # %%

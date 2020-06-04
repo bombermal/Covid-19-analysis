@@ -18,6 +18,7 @@ import Codes.read as rdF
 import Codes.function as fc
 import Codes.graph as gf
 import Codes.node as nd
+import Codes.smithWaterman as sw
 
 def read_raw_files(path):#
     """
@@ -267,7 +268,7 @@ def filter_df_on_pdbsDict(dataDict, pdbDict):
     Returns
     -------
     dict
-        Dicionário com DataFrames já filtados
+        Dicionário com DataFrames já filtrados
     """
     temp = {}
     for key, value in dataDict.items():
@@ -318,3 +319,40 @@ def simple_seq_to_list_of_nodes(pdb):
         temp.append(nd.node(val, -1, "sampleNoId", num, -1))
     
     return temp
+
+def sequences_to_nodes_list(filtered_dfs, processed):
+    #Dicionário com pdbs Filtrados na forma de nós, prontos para alinhar contra pdb do multifasta
+    nodes_list_from_pdbs = {}
+    for ii in filtered_dfs.keys():
+        nodes_list_from_pdbs[ii] = pdb_file_to_list_of_nodes(filtered_dfs[ii])
+
+    nodes_list_from_sample = {}
+    for ii in processed.keys():
+        nodes_list_from_sample[ii] = simple_seq_to_list_of_nodes(processed[ii][0])
+
+    return nodes_list_from_pdbs, nodes_list_from_sample
+
+def align_head_pdb(filtered_dfs, processed, nodes_list_from_pdbs, nodes_list_from_sample):
+    """
+    Alinha a sequencia do multifasta simples(sem degree) com a sequencia do pdb
+
+    Parameters
+    ----------
+    filtered_dfs : dict
+         Dicionário com DataFrames já filtados
+    processed : dict
+
+    nodes_list_from_pdbs : dict
+        [description]
+    nodes_list_from_sample : dict
+        [description]
+
+    """
+    for key in nodes_list_from_pdbs.keys():
+        obj = sw.smithWaterman()
+        seqIds, seqPos, cover = obj.constructor(2, -1, -1, nodes_list_from_sample[key], nodes_list_from_pdbs[key], False, False)
+        #4 salvar resultado em df
+        #Lista de Ids dos aminoácidos alinhados
+        processed[key][0]["AlnResult"] = "|".join(seqIds)
+        #Lista de Degrees criadas a partir da lista de Ids
+        processed[key][0]["AlnDgree"] = "|".join([str(filtered_dfs[key][filtered_dfs[key].NodeId == x].Degree.values[0]) for x in seqIds])
