@@ -130,6 +130,22 @@ def read_pdbs(pdbsNames):
 
     return pdbsNodesFiles, pdbsEdgesFiles, pdbsModifiedFiles
 
+def read_betwenness(path):
+    betwenness_raw = pd.read_csv(path)
+    betwenness_dict = {}
+    for ii in betwenness_raw.filename.unique():
+        key = str.upper(ii.split(".")[0])
+        betwenness_dict[key] = betwenness_raw[betwenness_raw.filename == ii][["node", "aminoAcid", "clusteringCoef", "betweennessWeighted"]]
+        betwenness_dict[key].rename(columns = {"node": "NodeId", "aminoAcid": "Residue", "clusteringCoef": "ClusteringCoef",
+        "betweennessWeighted": "Betweennessweighted"}, inplace=True)
+
+    return betwenness_dict
+
+def join_pdb_betw(pdbDict, betwDict):
+    for key in pdbDict.keys():
+        pdbDict[key] = pd.merge(pdbDict[key], betwDict[key], on=['NodeId', "Residue"])
+
+
 def fix_pdb(pdb):
     """
     Separa as partes do arquivo pdb utilizando REGEX
@@ -295,7 +311,7 @@ def pdb_file_to_list_of_nodes(df):
     """
     temp = []
     for num, row in df.iterrows():
-        temp.append(nd.node(seq1(row.Residue), row.Degree, row.NodeId, row.Position, -1))
+        temp.append(nd.node(seq1(row.Residue), row.Degree, row.NodeId, row.Position, -1, row.ClusteringCoef, row.Betweennessweighted))
 
     return temp
 
@@ -316,7 +332,7 @@ def simple_seq_to_list_of_nodes(pdb):
     """
     temp = []
     for num, val in enumerate(pdb.Seq):
-        temp.append(nd.node(val, -1, "sampleNoId", num, -1))
+        temp.append(nd.node(val, -1, "sampleNoId", num, -1, 0, 0))
     
     return temp
 
@@ -354,5 +370,7 @@ def align_head_pdb(filtered_dfs, processed, nodes_list_from_pdbs, nodes_list_fro
         #4 salvar resultado em df
         #Lista de Ids dos aminoácidos alinhados
         processed[key][0]["AlnResult"] = "|".join(seqIds)
-        #Lista de Degrees criadas a partir da lista de Ids
-        processed[key][0]["AlnDgree"] = "|".join([str(filtered_dfs[key][filtered_dfs[key].NodeId == x].Degree.values[0]) for x in seqIds])
+        #Lista de Degrees/Clusterin/Betweness criadas a partir da lista de Ids
+        for name, ii in zip(["AlnDgree", "AlnClust", "AlnBetw"], ["Degree", "ClusteringCoef", "Betweennessweighted"]):
+            processed[key][0][name] = "|".join([str(filtered_dfs[key][filtered_dfs[key].NodeId == x][ii].values[0]) for x in seqIds])
+  

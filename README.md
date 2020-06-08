@@ -18,6 +18,8 @@
     - [X] Convert samples list to nodes
  - [X] Align PDBs with samples
  - [X] Determine values of degree
- - [ ] Determine values of betwenness
+ - [X] Determine values of betwenness
+ - [X] Determine values of clustering coeficient
  - [X] Plot degree dristribution
  - [ ] Plot betwenness dristribution
+ - [ ] Plot clustering coeficient

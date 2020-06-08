@@ -23,14 +23,18 @@ conditions = [.5,1,2]
 # Descomente para rodar
 #wf.plot(conditions, len(raw_df_aln), counted_df, "4_Covid19_2340" )
 
-#%% 4 - Ler PDB
+#%% 4 - Ler PDB and Betwenness
 
 # Read PDB's
 pdbsNames = [ "6vyo", "6wji"]
 pdbsNodesFiles, pdbsEdgesFiles, pdbsModifiedFiles = wf.read_pdbs(pdbsNames)
+# Load Betwenness
+path = "Read/Betweness e Coef. Clusterização/Nucleocapsid_Protein_NodesResult.csv"
+betwenness_dict = wf.read_betwenness(path)
+# Merge Dataframes 
+wf.join_pdb_betw(pdbsNodesFiles, betwenness_dict)
 
 #%% 5 - Tratar Raw data, separa da tabela de alinhamento o pdb das amostras
-
 
 csvPath = "Saved/pdb_6vyo.csv"
 dfPath = "Saved/ProcessedData_6vyo.csv"
@@ -60,12 +64,8 @@ nodes_list_from_pdbs, nodes_list_from_sample = wf.sequences_to_nodes_list(filter
 wf.align_head_pdb(filtered_dfs, processed, nodes_list_from_pdbs, nodes_list_from_sample)
 
 #%% 7 - Transpor resultados
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 import seaborn as sns
-
-#temp = [float(x) for x in pdb.AlnDgree.split("|")]
-#sns.distplot(temp, kde=False)
-temp = processed["6VYO"][1].loc[11278]
 
 def range_converter(rng):
     """
@@ -86,13 +86,12 @@ def range_converter(rng):
     #return range(temp[0]-1, temp[1])
     return temp[0]-1, temp[1]
 
-aux = range_converter(temp.PDBAlign)
-temp["Degree"] = "|".join(processed["6VYO"][0].AlnDgree.split("|")[aux[0]:aux[1]])
-# %%
 from tqdm import tqdm
 for key in processed.keys():
     degreeString = processed[key][0].AlnDgree.split("|")
     processed[key][1]["Degrees"] = 0
+    processed[key][1]["ClusteringCoef"] = 0
+    processed[key][1]["Betweennessweighted"] = 0
     for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
         aux = range_converter(row.PDBAlign)
         processed[key][1]["Degrees"].loc[idx] = "|".join(degreeString[aux[0]:aux[1]])
@@ -101,10 +100,18 @@ for key in processed.keys():
 
 ### To Do
 # 1 - Gerar Plots para todas os pdbs
+for key in processed.keys():
+    x = []#[ float(x) for x in processed[key][0].AlnDgree.split("|")]
+    for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
+        x += [ float(x) for x in row.Degrees.split("|")]
+
+    gf = sns.distplot(x)
+    fig = gf.fig
+
+    fig.suptitle("teste")
 # 2 - Gerar plot mostrando apenas as posições polimórficas, pegar a tabela filtrada modificando o
 # algoritmo de filtragem
-# 3 - Descobrir como conseguir o Betweness e plotar
-x = [ float(x) for x in processed["6VYO"][1].loc[11278].Degrees.split("|")]
-sns.distplot(x)
+
+
 
 # %%
