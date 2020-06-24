@@ -64,9 +64,6 @@ nodes_list_from_pdbs, nodes_list_from_sample = wf.sequences_to_nodes_list(filter
 wf.align_head_pdb(filtered_dfs, processed, nodes_list_from_pdbs, nodes_list_from_sample)
 
 #%% 7 - Transpor resultados
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 def range_converter(rng):
     """
     Converte PDBRange '1:124' em um range(0:124)
@@ -87,16 +84,28 @@ def range_converter(rng):
     return temp[0]-1, temp[1]
 
 from tqdm import tqdm
+def resultString(key, indexName):
+    return processed[key][0][indexName].split("|")
+
 for key in processed.keys():
-    degreeString = processed[key][0].AlnDgree.split("|")
+    indexes = ["AlnDgree", "AlnClust", "AlnBetw"]
+    columns = [ 'Degrees', 'ClusteringCoef', 'BetweennessWeighted']
+
     processed[key][1]["Degrees"] = 0
     processed[key][1]["ClusteringCoef"] = 0
-    processed[key][1]["Betweennessweighted"] = 0
+    processed[key][1]["BetweennessWeighted"] = 0
     for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
         aux = range_converter(row.PDBAlign)
-        processed[key][1]["Degrees"].loc[idx] = "|".join(degreeString[aux[0]:aux[1]])
+        for indx, col in zip(indexes, columns):
+            processed[key][1][col].loc[idx] = "|".join(resultString(key, indx)[aux[0]:aux[1]])
+#%%
+for keys, name in zip(processed.keys(), ["Saved/6VYO_Processed.csv", "Saved/6WJI_Processed.csv"]):
+    processed[key][1].to_csv(name)
 
+            
 # %%
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 ### To Do
 # 1 - Gerar Plots para todas os pdbs

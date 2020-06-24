@@ -145,7 +145,6 @@ def join_pdb_betw(pdbDict, betwDict):
     for key in pdbDict.keys():
         pdbDict[key] = pd.merge(pdbDict[key], betwDict[key], on=['NodeId', "Residue"])
 
-
 def fix_pdb(pdb):
     """
     Separa as partes do arquivo pdb utilizando REGEX
@@ -267,7 +266,6 @@ def pdbRead_or_Create(alnPath, csvPath="", dfPath="", ler=True):
         pdb.to_csv("Saved/pdb_6vyo.csv", index=True)
 
     return pdb, processedData
-
 
 def filter_df_on_pdbsDict(dataDict, pdbDict):
     """
