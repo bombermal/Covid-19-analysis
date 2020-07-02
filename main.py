@@ -98,29 +98,59 @@ for key in processed.keys():
         aux = range_converter(row.PDBAlign)
         for indx, col in zip(indexes, columns):
             processed[key][1][col].loc[idx] = "|".join(resultString(key, indx)[aux[0]:aux[1]])
-#%%
+
 for keys, name in zip(processed.keys(), ["Saved/6VYO_Processed.csv", "Saved/6WJI_Processed.csv"]):
     processed[key][1].to_csv(name)
 
             
-# %%
+#%% 8
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+import Codes.function as fc
 
 ### To Do
-# 1 - Gerar Plots para todas os pdbs
-for key in processed.keys():
-    x = []#[ float(x) for x in processed[key][0].AlnDgree.split("|")]
-    for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
-        x += [ float(x) for x in row.Degrees.split("|")]
+# 1 - Criar lista com posições polimórficas
+def snps_list(df, condition, size):
+    return fc.filter_criteria(df, size, condition).dropna().Pos.to_list()
 
-    gf = sns.distplot(x)
-    fig = gf.fig
+#counted_df[counted_df.Pos.isin(templist)]
+templist = snps_list(counted_df, .5, len(raw_df_aln))
+#2 - selecionar degrees da amostra 6VYO
 
-    fig.suptitle("teste")
-# 2 - Gerar plot mostrando apenas as posições polimórficas, pegar a tabela filtrada modificando o
-# algoritmo de filtragem
+# %%
+### Problema com a identificação dos valores no DF baseados no indice das sequencias do PDB
 
+
+def tempplot(column, title):
+    temp = [ x.split("|") for x in column.to_list()]
+    temp2 = [float(el) for sublist in temp for el in sublist]
+    sns.distplot(temp2).set_title(title)
+    plt.show()
+
+tempplot(processed["6VYO"][1].Degrees, "Distribuição Degrees 6VYO")
+tempplot(processed["6WJI"][1].Degrees, "Distribuição Degrees 6WJI")
+tempplot(processed["6VYO"][1].ClusteringCoef, "Distribuição ClusteringCoef 6VYO")
+tempplot(processed["6WJI"][1].ClusteringCoef, "Distribuição ClusteringCoef 6WJI")
+tempplot(processed["6VYO"][1].BetweennessWeighted, "Distribuição BetweennessWeighted 6VYO")
+tempplot(processed["6WJI"][1].BetweennessWeighted, "Distribuição BetweennessWeighted 6WJI")
+
+
+# %%
+from tqdm import tqdm
+
+temptidy = pd.DataFrame(columns=["Id", "Pos", "Amino", "Degr", "Clust", "Betw"])
+df = processed["6VYO"][1][:50]
+
+for idx, row in tqdm(df.iterrows(), total=len(df)):
+    id = row.Id
+    pos = range(1, len(row.Seq)+1)
+    amino = list(row.Seq)
+    degr = [float(x) for x in row.Degrees.split("|")]
+    clust = [float(x) for x in row.ClusteringCoef.split("|")]
+    betw = [float(x) for x in row.BetweennessWeighted.split("|")]
+    for p, a, d, c, b in zip(pos, amino, degr, clust, betw):
+        temptidy.loc[len(temptidy)] = [id,p,a,d,c,b]
 
 
 # %%

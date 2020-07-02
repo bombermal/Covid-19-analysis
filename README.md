@@ -21,5 +21,9 @@
  - [X] Determine values of betwenness
  - [X] Determine values of clustering coeficient
  - [X] Plot degree dristribution
- - [ ] Plot betwenness dristribution
- - [ ] Plot clustering coeficient
+ - [X] Plot betwenness dristribution
+ - [X] Plot clustering coeficient
+ - [ ] Find a way to correlact SNPs with found data
+ - [ ] Plot degree dristribution with SNPs
+ - [ ] Plot betwenness dristribution with SNPs
+ - [ ] Plot clustering coeficient with SNPs

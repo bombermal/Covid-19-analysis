@@ -71,6 +71,7 @@ def transpose_seq_and_count(column, counted_df):#
     None.
 
     """
+
     #Deixa todas as listas em Upper Case
     aux = column.apply(str.upper)
     #Transformei cada seq.row em lista
