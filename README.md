@@ -23,7 +23,7 @@
  - [X] Plot degree dristribution
  - [X] Plot betwenness dristribution
  - [X] Plot clustering coeficient
- - [ ] Find a way to correlact SNPs with found data
- - [ ] Plot degree dristribution with SNPs
- - [ ] Plot betwenness dristribution with SNPs
- - [ ] Plot clustering coeficient with SNPs
+ - [X] Find a way to correlact SNPs with found data
+ - [X] Plot degree dristribution with SNPs
+ - [X] Plot betwenness dristribution with SNPs
+ - [X] Plot clustering coeficient with SNPs

@@ -128,41 +128,60 @@ def tempplot(column, title):
     sns.distplot(temp2).set_title(title)
     plt.show()
 
-tempplot(processed["6VYO"][1].Degrees, "Distribuição Degrees 6VYO")
-tempplot(processed["6WJI"][1].Degrees, "Distribuição Degrees 6WJI")
-tempplot(processed["6VYO"][1].ClusteringCoef, "Distribuição ClusteringCoef 6VYO")
-tempplot(processed["6WJI"][1].ClusteringCoef, "Distribuição ClusteringCoef 6WJI")
-tempplot(processed["6VYO"][1].BetweennessWeighted, "Distribuição BetweennessWeighted 6VYO")
-tempplot(processed["6WJI"][1].BetweennessWeighted, "Distribuição BetweennessWeighted 6WJI")
+for col in ["Degrees", "ClusteringCoef", "BetweennessWeighted"]:
+    for key in processed.keys():
+        tempplot(processed[key][1][col], "Distribuição "+col+" "+key)
 
 
 # %%
 from tqdm import tqdm
+tidy = {}
 
-temptidy = pd.DataFrame(columns=["Id", "Pos", "Amino", "AlnPos", "SeqPos", "Degr", "Clust", "Betw"])
-df = processed["6VYO"][1]
+#Preparo a lista de filtagem, aqui possuo a lista com todos os SNPS
+preFilterList =  [float(x) for x in ":".join(list(processed["6WJI"][1].SeqAlign)).split(":")]
+snpsRange = (min(preFilterList), max(preFilterList))
+filteredRange = list(filter(lambda x : x >= snpsRange[0] and x<= snpsRange[1], templist))
 
-for idx, row in tqdm(df.iterrows(), total=len(df)):
-    id = row.Id
-    pos = range(1, len(row.Seq)+1)
-    amino = list(row.Seq)
-    degre = [float(x) for x in row.Degrees.split("|")]
-    clust = [float(x) for x in row.ClusteringCoef.split("|")]
-    betwe = [float(x) for x in row.BetweennessWeighted.split("|")]
-    pdbAlnRange = range_converter(row.PDBAlign)
-    pdbSeqRange = range_converter(row.SeqAlign)
-    pdbAlnRange = list(range(pdbAlnRange[0],pdbAlnRange[1]+1))
-    pdbSeqRange = list(range(pdbSeqRange[0], pdbSeqRange[1]+1))
-    rangeControl = 0
-    for p, a, pa, d, c, b in zip(pos, amino, pdbAlnRange, degre, clust, betwe):
-        for _ in range(3):
-            tpRange = pdbSeqRange[rangeControl]
-            temptidy.loc[len(temptidy)] = [id,p,a,pa,tpRange,d,c,b]
-            rangeControl +=1
-
+for key in processed.keys():
+    temptidy = pd.DataFrame(columns=["Id", "Pos", "Amino", "AlnPos", "SeqPos", "Degr", "Clust", "Betw"])
+    df = processed[key][1] 
+    for idx, row in tqdm(df.iterrows(), total=len(df)):
+        id = row.Id
+        cleanSeq = row.Seq.replace("-","") 
+        pos = range(1, len(cleanSeq)+1)
+        amino = list(cleanSeq)
+        degre = [float(x) for x in row.Degrees.split("|")]
+        clust = [float(x) for x in row.ClusteringCoef.split("|")]
+        betwe = [float(x) for x in row.BetweennessWeighted.split("|")]
+        pdbAlnRange = range_converter(row.PDBAlign)
+        pdbSeqRange = range_converter(row.SeqAlign)
+        pdbAlnRange = list(range(pdbAlnRange[0],pdbAlnRange[1]+1))
+        pdbSeqRange = list(range(pdbSeqRange[0], pdbSeqRange[1]+1))+[0]
+        rangeControl = 0
+        for p, a, pa, d, c, b in zip(pos, amino, pdbAlnRange, degre, clust, betwe):
+            for _ in range(3):
+                tpRange = pdbSeqRange[rangeControl]
+                # aqui, adiciono ao DF apenas as posições que são SNPS, ganhando performance 
+                if tpRange in filteredRange: 
+                    temptidy.loc[len(temptidy)] = [id,p,a,pa,tpRange,d,c,b]
+                rangeControl +=1
+    tidy[key] = temptidy
+    temptidy.to_csv("Saved/TempTidy_"+key+".csv")
 
 
 # %%
-temptidy.to_csv("Saved/TempTidy.csv")
+
+for colP, colT in zip(["Degrees", "ClusteringCoef", "BetweennessWeighted"],['Degr', 'Clust', 'Betw']):
+    for keyP, keyT in zip(processed.keys(), tidy.keys()):
+        fig, ax = plt.subplots()
+        temp = [float(x) for x in "|".join(processed[keyP][1][colP].to_list()).split("|") ]
+        sns.distplot(temp, ax=ax, label="Norm").set_title("Distribuição "+colP+" "+keyP)
+        sns.distplot(tidy[keyT][colT], ax=ax, label="SNPs")
+        ax.legend()
+
+# for col in ['Degr', 'Clust', 'Betw']:
+#     fig, ax = plt.subplots()
+#     for key in tidy.keys():
+#         sns.distplot(tidy[key][col], ax=ax).set_title("Distribuição "+col+" "+key)
 
 # %%
