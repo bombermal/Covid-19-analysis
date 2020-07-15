@@ -81,7 +81,7 @@ def range_converter(rng):
     temp = [int(x) for x in rng.split(":")]
 
     #return range(temp[0]-1, temp[1])
-    return temp[0]-1, temp[1]
+    return temp[0], temp[1]
 
 from tqdm import tqdm
 def resultString(key, indexName):
@@ -97,7 +97,7 @@ for key in processed.keys():
     for idx, row in tqdm(processed[key][1].iterrows(), total=len(processed[key][1])):
         aux = range_converter(row.PDBAlign)
         for indx, col in zip(indexes, columns):
-            processed[key][1][col].loc[idx] = "|".join(resultString(key, indx)[aux[0]:aux[1]])
+            processed[key][1][col].loc[idx] = "|".join(resultString(key, indx)[aux[0]-1:aux[1]])
 
 for keys, name in zip(processed.keys(), ["Saved/6VYO_Processed.csv", "Saved/6WJI_Processed.csv"]):
     processed[key][1].to_csv(name)
@@ -118,7 +118,7 @@ def snps_list(df, condition, size):
 templist = snps_list(counted_df, .5, len(raw_df_aln))
 #2 - selecionar degrees da amostra 6VYO
 
-# %%
+#%% 9 
 ### Problema com a identificação dos valores no DF baseados no indice das sequencias do PDB
 
 
@@ -139,18 +139,30 @@ tempplot(processed["6WJI"][1].BetweennessWeighted, "Distribuição BetweennessWe
 # %%
 from tqdm import tqdm
 
-temptidy = pd.DataFrame(columns=["Id", "Pos", "Amino", "Degr", "Clust", "Betw"])
-df = processed["6VYO"][1][:50]
+temptidy = pd.DataFrame(columns=["Id", "Pos", "Amino", "AlnPos", "SeqPos", "Degr", "Clust", "Betw"])
+df = processed["6VYO"][1]
 
 for idx, row in tqdm(df.iterrows(), total=len(df)):
     id = row.Id
     pos = range(1, len(row.Seq)+1)
     amino = list(row.Seq)
-    degr = [float(x) for x in row.Degrees.split("|")]
+    degre = [float(x) for x in row.Degrees.split("|")]
     clust = [float(x) for x in row.ClusteringCoef.split("|")]
-    betw = [float(x) for x in row.BetweennessWeighted.split("|")]
-    for p, a, d, c, b in zip(pos, amino, degr, clust, betw):
-        temptidy.loc[len(temptidy)] = [id,p,a,d,c,b]
+    betwe = [float(x) for x in row.BetweennessWeighted.split("|")]
+    pdbAlnRange = range_converter(row.PDBAlign)
+    pdbSeqRange = range_converter(row.SeqAlign)
+    pdbAlnRange = list(range(pdbAlnRange[0],pdbAlnRange[1]+1))
+    pdbSeqRange = list(range(pdbSeqRange[0], pdbSeqRange[1]+1))
+    rangeControl = 0
+    for p, a, pa, d, c, b in zip(pos, amino, pdbAlnRange, degre, clust, betwe):
+        for _ in range(3):
+            tpRange = pdbSeqRange[rangeControl]
+            temptidy.loc[len(temptidy)] = [id,p,a,pa,tpRange,d,c,b]
+            rangeControl +=1
 
+
+
+# %%
+temptidy.to_csv("Saved/TempTidy.csv")
 
 # %%
